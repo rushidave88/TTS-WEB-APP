@@ -1,4 +1,3 @@
-
 --extra-index-url https://download.pytorch.org/whl/cu118
 
 # Web Server & Backend Framework
@@ -8,12 +7,17 @@ python-multipart==0.0.6
 aiofiles==23.2.1
 pydantic==2.5.3
 jinja2==3.1.3
+watchfiles==0.21.0
 
 # AI Models & Processing
 TTS==0.22.0
 transformers==4.38.2
+pydub==0.25.1
 
 # PyTorch Ecosystem (Locked to stable 2.1.2 for Coqui)
 torch==2.1.2
 torchvision==0.16.2
 torchaudio==2.1.2
+
+# Utilities
+typing-extensions>=4.8.0
