@@ -10,16 +10,20 @@ document.addEventListener("DOMContentLoaded", async () => {
     // Fetch supported languages on load
     try {
         const res = await fetch("/languages");
-        const data = await res.json();
+        const languagesMap = await res.json(); // Now receiving { "en": "English", "hi": "Hindi", ... }
         
         languageSelect.innerHTML = "";
-        data.languages.forEach(lang => {
+
+        // Iterate through the dictionary/object entries
+        for (const [code, fullName] of Object.entries(languagesMap)) {
             const option = document.createElement("option");
-            option.value = lang;
-            option.textContent = lang.toUpperCase();
-            if (lang === "hi") option.selected = true; // Set Hindi as default
+            option.value = code;        // Sends short code (e.g., 'hi') to backend [cite: 48]
+            option.textContent = fullName; // Displays full name (e.g., 'Hindi') to user 
+            
+            if (code === "hi") option.selected = true; // Set Hindi as default
             languageSelect.appendChild(option);
-        });
+        }
+        
         languageSelect.disabled = false;
     } catch (error) {
         console.error("Failed to load languages:", error);
@@ -36,7 +40,7 @@ document.addEventListener("DOMContentLoaded", async () => {
             return;
         }
 
-        // UI Loading State
+        // UI Loading State [cite: 18]
         generateBtn.disabled = true;
         btnText.textContent = "Generating...";
         spinner.classList.remove("hidden");
@@ -67,7 +71,7 @@ document.addEventListener("DOMContentLoaded", async () => {
             statusMessage.textContent = `Error: ${error.message}`;
             statusMessage.style.color = "red";
         } finally {
-            // Restore UI state
+            // Restore UI state [cite: 18]
             generateBtn.disabled = false;
             btnText.textContent = "Generate Speech";
             spinner.classList.add("hidden");

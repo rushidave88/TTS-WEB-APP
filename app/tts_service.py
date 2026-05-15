@@ -16,13 +16,36 @@ class TTSService:
         BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
         self.default_speaker = os.path.join(BASE_DIR, "default_speaker.wav")
         
-        # Hardcoded supported languages for XTTS-v2 as fallback
-        self.supported_languages = ["en", "es", "fr", "de", "it", "pt", "pl", "tr", "ru", "nl", "cs", "ar", "zh-cn", "hu", "ko", "ja", "hi"]
+        # Full name mapping for XTTS-v2 supported languages
+        self.language_map = {
+            "en": "English",
+            "hi": "Hindi",
+            "es": "Spanish",
+            "fr": "French",
+            "de": "German",
+            "it": "Italian",
+            "pt": "Portuguese",
+            "pl": "Polish",
+            "tr": "Turkish",
+            "ru": "Russian",
+            "nl": "Dutch",
+            "cs": "Czech",
+            "ar": "Arabic",
+            "zh-cn": "Chinese (Simplified)",
+            "hu": "Hungarian",
+            "ko": "Korean",
+            "ja": "Japanese"
+        }
 
     def get_languages(self):
-        if hasattr(self.tts, 'languages') and self.tts.languages:
-            return self.tts.languages
-        return self.supported_languages
+        """Returns a dictionary of {code: Full Name} for the UI dropdown."""
+        # Use model's internal list if available, otherwise fallback to our map
+        try:
+            model_codes = self.tts.languages if hasattr(self.tts, 'languages') else list(self.language_map.keys())
+            # Return only the languages in our map that the model actually supports
+            return {code: self.language_map.get(code, code.upper()) for code in model_codes}
+        except Exception:
+            return self.language_map
 
     def generate_audio(self, text: str, language: str, output_path: str):
         if not os.path.exists(self.default_speaker):

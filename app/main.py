@@ -41,9 +41,8 @@ def serve_frontend():
     return FileResponse(os.path.join(STATIC_DIR, "index.html"))
 
 @app.get("/languages")
-def get_languages():
-    languages = tts_service.get_languages()
-    return {"languages": languages}
+async def get_languages():
+    return tts_service.get_languages()
 
 @app.post("/generate-tts")
 async def generate_tts(request: TTSRequest):
