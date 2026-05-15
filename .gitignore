@@ -1,16 +1,15 @@
-# Environments
+# Environment
 venv/
+__pycache__/
 .env
 
-# AI Models & Audio
+# IGNORE all generated/uploaded audio
 audio/*.wav
-*.wav
+uploads/*.wav
+
+# KEEP specific samples and binaries
+!male_speaker.wav
+!female_speaker.wav
 !default_speaker.wav
-
-# Python cache
-__pycache__/
-*.pyc
-
-# IDEs
-.vscode/
-.idea/
+!ffmpeg.exe
+!ffprobe.exe

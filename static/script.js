@@ -1,80 +1,108 @@
+let mediaRecorder;
+let audioChunks = [];
+let recordedBase64 = null;
+
 document.addEventListener("DOMContentLoaded", async () => {
     const languageSelect = document.getElementById("language");
-    const textInput = document.getElementById("text");
     const generateBtn = document.getElementById("generate-btn");
-    const btnText = document.getElementById("btn-text");
-    const spinner = document.getElementById("spinner");
-    const audioPlayer = document.getElementById("audio-player");
+    const recordBtn = document.getElementById("record-btn");
+    const stopBtn = document.getElementById("stop-btn");
+    const recordSection = document.getElementById("record-section");
+    const textInput = document.getElementById("text");
     const statusMessage = document.getElementById("status-message");
+    const audioPlayer = document.getElementById("audio-player");
 
-    // Fetch supported languages on load
-    try {
-        const res = await fetch("/languages");
-        const languagesMap = await res.json(); // Now receiving { "en": "English", "hi": "Hindi", ... }
-        
-        languageSelect.innerHTML = "";
-
-        // Iterate through the dictionary/object entries
-        for (const [code, fullName] of Object.entries(languagesMap)) {
-            const option = document.createElement("option");
-            option.value = code;        // Sends short code (e.g., 'hi') to backend [cite: 48]
-            option.textContent = fullName; // Displays full name (e.g., 'Hindi') to user 
-            
-            if (code === "hi") option.selected = true; // Set Hindi as default
-            languageSelect.appendChild(option);
-        }
-        
-        languageSelect.disabled = false;
-    } catch (error) {
-        console.error("Failed to load languages:", error);
-        languageSelect.innerHTML = '<option value="">Error loading languages</option>';
+    // 1. Load Languages
+    const res = await fetch("/languages");
+    const langs = await res.json();
+    languageSelect.innerHTML = "";
+    for (const [code, name] of Object.entries(langs)) {
+        const opt = document.createElement("option");
+        opt.value = code; opt.textContent = name;
+        if (code === "hi") opt.selected = true;
+        languageSelect.appendChild(opt);
     }
+    languageSelect.disabled = false;
 
-    // Handle Generation
-    generateBtn.addEventListener("click", async () => {
+    // 2. Toggle UI & AUTO-STOP AUDIO
+    document.querySelectorAll('input[name="gender"]').forEach(radio => {
+        radio.addEventListener('change', (e) => {
+            // KILL SWITCH: Stop sound, clear source, and hide player
+            audioPlayer.pause();
+            audioPlayer.src = ""; 
+            audioPlayer.load(); 
+            audioPlayer.classList.add("hidden");
+            
+            statusMessage.textContent = ""; 
+            recordSection.classList.toggle('hidden', e.target.value !== 'user');
+        });
+    });
+
+    // 3. Recording Logic
+    recordBtn.onclick = async () => {
+        // Also stop audio if user starts recording
+        audioPlayer.pause();
+        audioPlayer.src = "";
+
+        const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+        mediaRecorder = new MediaRecorder(stream);
+        audioChunks = [];
+        mediaRecorder.ondataavailable = e => audioChunks.push(e.data);
+        mediaRecorder.onstop = () => {
+            const blob = new Blob(audioChunks, { type: 'audio/webm' });
+            const reader = new FileReader();
+            reader.readAsDataURL(blob);
+            reader.onloadend = () => {
+                recordedBase64 = reader.result.split(',')[1];
+                document.getElementById('record-status').textContent = "✅ Voice Captured!";
+            };
+        };
+        mediaRecorder.start();
+        recordBtn.disabled = true; stopBtn.disabled = false;
+        document.getElementById('record-status').textContent = "🔴 Recording...";
+    };
+
+    stopBtn.onclick = () => {
+        mediaRecorder.stop();
+        recordBtn.disabled = false; stopBtn.disabled = true;
+    };
+
+    // 4. Generate Logic
+    generateBtn.onclick = async () => {
         const text = textInput.value.trim();
-        const language = languageSelect.value;
+        const gender = document.querySelector('input[name="gender"]:checked').value;
 
-        if (!text) {
-            alert("Please enter some text.");
-            return;
-        }
+        if (!text) return alert("Please enter text.");
+        if (gender === "user" && !recordedBase64) return alert("Record your voice first!");
 
-        // UI Loading State [cite: 18]
         generateBtn.disabled = true;
-        btnText.textContent = "Generating...";
-        spinner.classList.remove("hidden");
-        audioPlayer.classList.add("hidden");
-        statusMessage.textContent = "";
+        statusMessage.textContent = "Processing on GPU...";
 
         try {
             const response = await fetch("/generate-tts", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ text, language })
+                body: JSON.stringify({
+                    text: text,
+                    language: languageSelect.value,
+                    gender: gender,
+                    recorded_audio: recordedBase64 || ""
+                })
             });
-
+            
             const data = await response.json();
-
             if (response.ok) {
-                // Add timestamp to prevent browser from caching the audio file
-                audioPlayer.src = data.audio_url + "?t=" + new Date().getTime();
+                audioPlayer.src = data.audio_url + "?t=" + Date.now();
                 audioPlayer.classList.remove("hidden");
                 audioPlayer.play();
-                statusMessage.textContent = "Success! Playing audio...";
-                statusMessage.style.color = "green";
+                statusMessage.textContent = "✅ Done!";
             } else {
-                throw new Error(data.detail || "Generation failed.");
+                statusMessage.textContent = "❌ Error: " + data.detail;
             }
         } catch (error) {
-            console.error(error);
-            statusMessage.textContent = `Error: ${error.message}`;
-            statusMessage.style.color = "red";
+            statusMessage.textContent = "❌ Connection failed.";
         } finally {
-            // Restore UI state [cite: 18]
             generateBtn.disabled = false;
-            btnText.textContent = "Generate Speech";
-            spinner.classList.add("hidden");
         }
-    });
+    };
 });

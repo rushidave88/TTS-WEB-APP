@@ -2,38 +2,38 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Coqui TTS Generator</title>
+    <title>Coqui Voice Lab</title>
     <link rel="stylesheet" href="/static/style.css">
 </head>
 <body>
     <div class="container">
-        <h1>🎙️ Coqui TTS Studio</h1>
+        <h1>🎙️ Coqui Voice Lab</h1>
         
-        <div class="form-group">
-            <label for="language">Select Language:</label>
-            <select id="language" disabled>
-                <option value="">Loading languages...</option>
-            </select>
+        <label>1. Select Language:</label>
+        <select id="language" disabled><option>Loading...</option></select>
+
+        <label>2. Choose Voice:</label>
+        <div class="voice-options">
+            <label><input type="radio" name="gender" value="male" checked> Male Preset</label>
+            <label><input type="radio" name="gender" value="female"> Female Preset</label>
+            <label><input type="radio" name="gender" value="user" id="user-opt"> Clone My Voice</label>
         </div>
 
-        <div class="form-group">
-            <label for="text">Enter Text:</label>
-            <textarea id="text" rows="5" placeholder="Type something here... (e.g., नमस्ते)"></textarea>
+        <div id="record-section" class="hidden">
+            <button id="record-btn">🎤 Start Recording</button>
+            <button id="stop-btn" disabled>🛑 Stop</button>
+            <p id="record-status">Record 3-5 seconds of your voice.</p>
         </div>
 
-        <button id="generate-btn">
-            <span id="btn-text">Generate Speech</span>
-            <div id="spinner" class="spinner hidden"></div>
-        </button>
+        <label>3. Enter Text:</label>
+        <textarea id="text" placeholder="Type something to synthesize..."></textarea>
 
-        <div class="audio-container">
-            <p id="status-message"></p>
-            <audio id="audio-player" controls class="hidden"></audio>
-        </div>
+        <button id="generate-btn">Generate Speech</button>
+        
+        <div id="spinner" class="hidden">Processing...</div>
+        <audio id="audio-player" controls class="hidden"></audio>
+        <p id="status-message"></p>
     </div>
-
-   <script src="/static/script.js"></script>
-   
+    <script src="/static/script.js"></script>
 </body>
 </html>
