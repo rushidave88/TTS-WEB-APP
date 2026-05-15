@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Coqui TTS Generator</title>
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+    <div class="container">
+        <h1>🎙️ Coqui TTS Studio</h1>
+        
+        <div class="form-group">
+            <label for="language">Select Language:</label>
+            <select id="language" disabled>
+                <option value="">Loading languages...</option>
+            </select>
+        </div>
+
+        <div class="form-group">
+            <label for="text">Enter Text:</label>
+            <textarea id="text" rows="5" placeholder="Type something here... (e.g., नमस्ते)"></textarea>
+        </div>
+
+        <button id="generate-btn">
+            <span id="btn-text">Generate Speech</span>
+            <div id="spinner" class="spinner hidden"></div>
+        </button>
+
+        <div class="audio-container">
+            <p id="status-message"></p>
+            <audio id="audio-player" controls class="hidden"></audio>
+        </div>
+    </div>
+
+   <script src="/static/script.js"></script>
+   
+</body>
+</html>

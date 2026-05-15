@@ -1,0 +1,16 @@
+# Environments
+venv/
+.env
+
+# AI Models & Audio
+audio/*.wav
+*.wav
+!default_speaker.wav
+
+# Python cache
+__pycache__/
+*.pyc
+
+# IDEs
+.vscode/
+.idea/
