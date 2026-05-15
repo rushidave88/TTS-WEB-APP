@@ -1,44 +1,51 @@
 
-# 🎙️ Coqui XTTS-v2 FastAPI Web App
+# 🎙️ Coqui Voice Lab: AI TTS & Voice Cloning
 
-A modern, fast, and multilingual Text-to-Speech (TTS) web application built from scratch. It uses a **FastAPI** backend, a vanilla **HTML/CSS/JS** frontend, and integrates **Coqui XTTS-v2** for high-quality, zero-shot voice cloning and speech generation.
+A sophisticated, high-performance Text-to-Speech (TTS) web application. This project features a **FastAPI** backend and a vanilla **HTML/CSS/JS** frontend, utilizing **Coqui XTTS-v2** for high-quality, zero-shot voice cloning. Users can generate speech using presets or record their own voice in real-time to create an instant digital clone.
 
 ## 📂 Project Folder Structure
 
-Ensure your project directory looks exactly like this:
+Ensure your project directory looks exactly like this for the application to function correctly:
 
 ```text
 TTS-WEB-APP/
 ├── app/
-│   ├── __init__.py         # Empty file to mark directory as a module
-│   ├── cleanup.py          # Background task to delete old audio files
-│   ├── main.py             # FastAPI application and routing
-│   └── tts_service.py      # Coqui TTS logic and generation
-├── audio/                  # Generated .wav files will be saved here automatically
+│   ├── __init__.py         # Marks directory as a module
+│   ├── cleanup.py          # Background worker to delete old audio/uploads
+│   ├── main.py             # FastAPI routing and audio conversion logic
+│   └── tts_service.py      # Coqui TTS engine and inference logic
+├── audio/                  # Generated TTS .wav outputs (Auto-managed)
+├── uploads/                # Temporary user recordings for cloning (Auto-managed)
 ├── static/                 
-│   ├── index.html          # Frontend UI
-│   ├── script.js           # Frontend logic and API calls
-│   └── style.css           # Modern styling
+│   ├── index.html          # Modern, responsive UI
+│   ├── script.js           # MediaRecorder logic and API interaction
+│   └── style.css           # Professional styling
 ├── venv/                   # Python virtual environment
-├── default_speaker.wav     # (CRITICAL) 3-5 second sample voice file for cloning
-├── requirements.txt        # Python dependencies
+├── ffmpeg.exe              # (CRITICAL) Binary for audio conversion
+├── ffprobe.exe             # (CRITICAL) Binary for audio analysis
+├── male_speaker.wav        # Preset male voice sample
+├── female_speaker.wav      # Preset female voice sample
+├── default_speaker.wav     # Original default sample voice
+├── requirements.txt        # Project dependencies
 └── README.md               # Project documentation
 
 ```
 
-## ⚙️ Prerequisites & Setup
+## 🚀 Key Features
 
-To deploy or test this application on a new machine, the following setup is required.
+* **Real-Time Voice Cloning:** Record 3-5 seconds of audio directly in the browser to instantly clone your voice.
+* **Intelligent UI Stop-Logic:** The audio player automatically stops, resets, and hides when switching between voice options to prevent audio overlap.
+* **Multilingual Support:** Synthesize speech in over 16 languages (Hindi, English, Spanish, etc.) with a single click.
+* **Automatic Audio Sanitization:** Uses **FFmpeg** and **Pydub** on the backend to convert browser-recorded WebM/Ogg files into 16-bit PCM WAV files required by the AI engine.
+* **Automated Storage Management:** The `cleanup.py` worker runs every 10 minutes to purge both generated results and temporary user uploads.
+
+## ⚙️ Setup & Installation
 
 ### Prerequisites:
 
-* Python **3.9, 3.10, or 3.11** installed.
-* **Audio Reference Sample (Required):** You must place a file named `default_speaker.wav` in the root directory (A sample voice audio to train model for TTS).
-* **Duration:** 3 to 5 seconds.
-* **Quality:** Clean audio with a single speaker and no background noise.
-* **Impact:** The AI will clone this specific voice. For best results in a specific language (like Hindi), use a native speaker sample.
-
-
+* Python **3.9, 3.10, or 3.11**.
+* **NVIDIA GPU (Recommended):** The app is configured for CUDA to ensure fast, real-time generation.
+* **FFmpeg Binaries:** `ffmpeg.exe` and `ffprobe.exe` must be in the root folder to handle "Clone My Voice" recordings.
 
 ### Installation Steps:
 
@@ -51,35 +58,38 @@ venv\Scripts\activate
 ```
 
 **2. Install Dependencies:**
-All dependencies, including the specific CUDA-enabled GPU versions of PyTorch, are locked in the `requirements.txt` file.
 
 ```bash
 pip install -r requirements.txt
 
 ```
 
-**3. First-Time Model Initialization:**
-Upon the first execution, the backend will automatically download the ~1.87 GB XTTS-v2 model weights.
+**3. Model Download:**
+On the first run, the system will download the ~1.8GB XTTS-v2 model weights automatically.
 
-## 🚀 How to Run the Application
+## 🏃 How to Run the Application
 
 **1. Start the Server:**
-Execute the following command in the terminal:
 
 ```bash
 uvicorn app.main:app --reload
 
 ```
 
-**2. Access the Interfaces:**
+**2. Access the Application:**
 
-* **Web User Interface:** `http://localhost:8000`
-* **Swagger API Documentation:** `http://localhost:8000/docs`
+* **Web Interface:** `http://localhost:8000`
+* **API Docs (Swagger):** `http://localhost:8000/docs`
 
-## ✨ Application Workflow & Features
+## 🎤 Cloning Your Voice
 
-* **Zero-Shot Voice Cloning:** When a user clicks "Generate," the AI analyzes the acoustic properties of `default_speaker.wav` and uses those characteristics to synthesize the inputted text in the selected language.
-* **Dynamic Language Loading:** On load, the frontend queries the backend to determine supported languages and populates the UI dropdown.
-* **Non-Blocking Architecture:** Audio generation is offloaded to an asynchronous background thread (`asyncio.to_thread`) to keep the server responsive.
-* **Automated Storage Management:** A background worker (`cleanup.py`) runs every 5 minutes to delete generated files older than 10 minutes.
+1. Select the **"Clone My Voice"** radio button.
+2. Click **🎤 Start Recording** and speak clearly for 5 seconds.
+3. Click **🛑 Stop**. The UI will confirm with "✅ Voice Captured!".
+4. Type your text in the input area and click **Generate Speech**.
+5. The backend will convert your recording using FFmpeg and use it as a reference for the TTS engine.
 
+## 📄 Important Notes
+
+* **Privacy:** Recorded voice samples are stored in the `uploads/` folder and are automatically deleted by the background cleanup task.
+* **Audio Quality:** For best cloning results, ensure your recording environment is quiet and your microphone is clear.
